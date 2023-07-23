@@ -4,7 +4,7 @@
 * @author Zachary Kohlman
 * @email kohlmanz@msoe.edu
 * @version V1.0
-* @brief This file contains the API declaration for servo.c
+* @brief This file contains the API declaration for adc.c
 ******************************************************************************
 */
 #ifndef ADC_H

@@ -1,13 +1,11 @@
-/*
- * joystick.h
- *
- *  Created on: Apr 14, 2023
- *      Author: kohlmanz
+/**
+ * @file joystick.h
+ * @brief This file contains the definitions and function prototypes for the Joystick.
  */
-
 #ifndef JOYSTICK_H_
 #define JOYSTICK_H_
 
+// Function prototypes
 int joystick_get_x(void);
 int joystick_get_y(void);
 void joystick_read(void);

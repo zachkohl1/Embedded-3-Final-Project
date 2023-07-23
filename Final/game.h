@@ -19,6 +19,7 @@
 #define ENEMY_SPAWN_RATE 5					// Number of enemies increased per level.
 #define BOX_SIZE 10                         // Size of the box
 #define BOX_OFFSET 1                        // Offset of the box
+#define MAX_ATTEMPTS 1000                   // Max attempts to generate a new enemy
 
 
 typedef struct {

@@ -36,8 +36,8 @@ static int num_enemies = 5;						// Enemy counter
 static int  end_position = 70;					// To bottom of the screen
 LEVEL_INFO level_info;							// Struct that contains all level info
 char str[MAX_LENGTH];							// String to display on 7-seg displays
-int xcord[MAX_ENEMIES];							// Array of x coordinates for enemies
-int ycord[MAX_ENEMIES];							// Array of y coordinates for enemies
+int xcord[MAX_ENEMIES];							// Array of x coordinates for enemies. Uses sentinel value of -1
+int ycord[MAX_ENEMIES];							// Array of y coordinates for enemies. Uses sentinel value of -1
 
 // Array of colors to be iterated through for each level
 static const uint16_t enemy_colors[] = {
@@ -85,49 +85,79 @@ int tetris_init(void){
 }
 
 /**
- * Generates a new level. 5 is the max, and each time, the horizontal line gets closer to the top
- * and the "enemy" blocks are faster
+ * This function generates the next level in the game.
+ * It clears the screen, increments the level counter, and displays the new level on 7-seg displays.
+ * It then draws enemies at random x and y locations. These enemies are stationary.
+ * 
+ * @return 0 on successful execution.
  */
 int generate_next_level(void){
-	// clear_screen();
-	// //Increase Level counter.
-	// level_count++;
+	// Clear the screen
+	clear_screen();
 
-	// //Display level on Hex displays, decrement level_count to index at 0
-	// hex_message(level_info.level_hex[level_count-1]);
+	// Increase Level counter
+	level_count++;
 
-	// //Draw enemies at random x and y locations. Are stationary
-	// for(int i = 0; i < level_info.num_enemies[level_count-1]; i++){
-	// 	//Only draw if not a sentinel value
+	// Display level on Hex displays, decrement level_count to index at 0
+	int current_level_index = level_count - 1;
+	hex_message(level_info.level_hex[current_level_index]);
 
-	// 	//Enemies are 10 x 10 boxes with random positive coordinates on screen
-	// 	int x = rand()%(width-10)+1;
-	// 	int y = rand()%(level_info.end_location[level_count-1]-10)+1;
+	// Draw enemies at random x and y locations. Are stationary.
+	int num_enemies = level_info.num_enemies[current_level_index];
+	int end_location = level_info.end_location[current_level_index];
 
-		//Update Arrays
-		xcord[i] = x;
-		ycord[i] = y;
+	for(int i = 0; i < num_enemies; i++){
+		int x, y;
+		int attempts = 0;
 
+		while (1) {
+			// Generate random position
+			x = (rand() & (width - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
+			y = (rand() & (end_location - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
+
+			// Check for collision with existing enemies
+			int j;
+			for (j = 0; j < i; j++) {
+				if (abs(xcord[j] - x) < BOX_SIZE && abs(ycord[j] - y) < BOX_SIZE) {
+					break;  // Collision detected, break out of the loop
+				}
+			}
+
+			if (j == i || ++attempts == MAX_ATTEMPTS) {
+				// No collision detected or max attempts reached, break out of the while loop
+				break;
+			}
+		}
+
+		if (attempts == MAX_ATTEMPTS) {
+			// Handle situation where a valid position couldn't be found
+			printf("Error: Could not find a valid position for enemy %d after %d attempts\n", i, MAX_ATTEMPTS);
+		} else {
+			// Update Arrays
+			xcord[i] = x;
+			ycord[i] = y;
+		}
 	}
+
 	return 0;
 }
-
 /**
  * Returns -1 if touching enemy
  */
 int player_touching_enemy(int x, int y){
-	int player_box_right = x + 10; // Rightmost x-coordinate of player's box
-	int player_box_bottom = y + 10; // Bottommost y-coordinate of player's box
+	int player_box_right = x + BOX_SIZE; // Rightmost x-coordinate of player's box
+	int player_box_bottom = y + BOX_SIZE; // Bottommost y-coordinate of player's box
 
 	for(int i = 0; i < MAX_ENEMIES; i++){
+
 		// Determine if the current value is not a sentinel value
 		if(xcord[i] < 0 || ycord[i] < 0){
 			break;                // Stop
 		}
 
 		// Check if player's box touches the current enemy block
-		int enemy_box_right = xcord[i] + 10; // Rightmost x-coordinate of enemy's box
-		int enemy_box_bottom = ycord[i] + 10; // Bottommost y-coordinate of enemy's box
+		int enemy_box_right = xcord[i] + BOX_SIZE; // Rightmost x-coordinate of enemy's box
+		int enemy_box_bottom = ycord[i] + BOX_SIZE; // Bottommost y-coordinate of enemy's box
 
 		// Check for overlap or touching
 		if (player_box_right >= xcord[i] && x <= enemy_box_right &&
@@ -188,6 +218,9 @@ void countdown(int num){
 	}
 }
 
+/**
+ * Returns the end distance for the current level
+*/
 int get_end_dist(void){
 	return level_info.end_location[level_count-1];
 }

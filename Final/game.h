@@ -12,7 +12,7 @@
 #ifndef GAME_H_
 #define GAME_H_
 
-
+// Game definitions
 #define NUM_LEVELS 5						// Number of levels
 #define MAX_LENGTH 6						// String length to print level
 #define MAX_ENEMIES 30						// Max enemies to spawn
@@ -29,7 +29,7 @@ typedef struct {
     int end_location[NUM_LEVELS];            // Array of horizontal line positions to be iterated through for each level
 } LEVEL_INFO;
 
-// Functions used in game.c
+// Function prototypes
 int generate_first_level(void);
 int tetris_init(void);
 int* get_enemy_x(void);

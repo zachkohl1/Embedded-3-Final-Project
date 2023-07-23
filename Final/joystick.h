@@ -5,6 +5,8 @@
 #ifndef JOYSTICK_H_
 #define JOYSTICK_H_
 
+#define CENTER_X  119
+#define CENTER_Y 120
 // Function prototypes
 int joystick_get_x(void);
 int joystick_get_y(void);

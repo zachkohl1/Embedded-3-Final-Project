@@ -1,6 +1,6 @@
 /**
 ******************************************************************************
-* @file servo.h
+* @file adc.h
 * @author Zachary Kohlman
 * @email kohlmanz@msoe.edu
 * @version V1.0

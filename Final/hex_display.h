@@ -7,8 +7,6 @@
 #define HEX_DISPLAY_H_
 
 // Hex display definitions
-#define CENTER_X  119
-#define CENTER_Y 120
 #define MAX_LENGTH 6
 #define HEX5_4_SHIFT_MAX 8
 #define HEX3_0_SHIFT_MAX 24

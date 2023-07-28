@@ -49,8 +49,8 @@ int num_colors = sizeof(colors)/sizeof(colors[0]);
 
 /**
  * @brief Initializes the LCD screen.
- * 
- * This function initializes the ADC, opens the pixel buffer DMA device, 
+ *
+ * This function initializes the ADC, opens the pixel buffer DMA device,
  * allocates memory for the back buffer, swaps the buffers, and clears the front buffer.
  * It also sets the initial position of the box to the top left corner of the screen (0,0).
  */
@@ -77,10 +77,10 @@ void lcd_init(void) {
 
 /**
  * @brief Draws a box and updates its position based on joystick input.
- * 
- * This function clears the back buffer of the screen, generates enemies, 
- * draws a goal line at a specified location, and draws a green 10x10 box 
- * at the current player position. It then updates the player position based 
+ *
+ * This function clears the back buffer of the screen, generates enemies,
+ * draws a goal line at a specified location, and draws a green 10x10 box
+ * at the current player position. It then updates the player position based
  * on joystick input and swaps the front and back buffers.
  */
 void draw_box_and_follow(void){

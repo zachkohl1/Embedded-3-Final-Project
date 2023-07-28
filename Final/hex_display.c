@@ -23,40 +23,31 @@
 volatile uint32_t* const hex5_4 = (uint32_t*)HEX5_HEX4_BASE;
 volatile uint32_t* const hex3_0 = (uint32_t*)HEX3_HEX0_BASE;
 
-
-
 /**
- * @brief This function displays a message on a HEX display.
- * 
- * The function takes a string as input and displays it on a HEX display.
- * The string is displayed in left to right order. If the string is null,
- * an error message is printed. If the length of the string is more than 6,
- * 'err' is displayed on the HEX display. The string is split between two
- * parts of the HEX display, hex5_4 and hex3_0, with the first two characters
- * going to hex5_4 and the rest going to hex3_0.
- *
- * @param string The string to be displayed on the HEX display.
+ * Name: hex_message
+ * Provides: A count down and assorted messages to complete milestone 2.
+ * I use strncpy to copy the ascii I want to display to the hexs to the
+ * hex address pointer.
+ * Arguments: None
+ * Returns: None
  */
+
 void hex_message(const char* string){
 
-	//Checks if the string is null
-	if (string == NULL) {
-		printf("Error: Input string is null\n");
-		return;
-	}
+	//Temporary variable to help iterate through the second set of HEXs
+	int temp = 0;
 
-	int temp = 0;	//Used to keep track of the index of the string
-	*hex5_4 = 0;	//Clears the hex5_4 display
-	*hex3_0 = 0;	//Clears the hex3_0 display
+	//Clear all digits
+	*hex5_4 = 0;
+	*hex3_0 = 0;
 
-	int length = strlen(string);	//Gets the length of the string
-
-	//Checks if the string is too long
-	if(length > MAX_LENGTH){
+	//If string is greater than 6 characters, print ERR
+	if(strlen(string)> 6){
 		*hex3_0 |= ('e' << (WORD*2)) | ('r' << WORD) | ('r');
 	}else{
-		//Iterates through the string and displays it on the HEX displays
-		for(int i = 0; i < length; i++){
+		//Not less than iterate through each of the characters
+		//and print them on the HEX's left to right
+		for(int i = 0; i < strlen(string); i++){
 			if(i < 2){
 				*hex5_4 |= string[i] << (HEX5_4_SHIFT_MAX - (HEX5_4_SHIFT_MAX*i));
 			} else {

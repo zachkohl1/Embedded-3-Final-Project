@@ -15,11 +15,14 @@
 // Game definitions
 #define NUM_LEVELS 5						// Number of levels
 #define MAX_LENGTH 6						// String length to print level
-#define MAX_ENEMIES 30						// Max enemies to spawn
+#define MAX_ENEMIES 20						// Max enemies to spawn
 #define ENEMY_SPAWN_RATE 5					// Number of enemies increased per level.
 #define BOX_SIZE 10                         // Size of the box
 #define BOX_OFFSET 1                        // Offset of the box
 #define MAX_ATTEMPTS 1000                   // Max attempts to generate a new enemy
+#define SAFE_DISTANCE 10                    // Safe distance between player and enemy
+#define END_OF_GAME_DELAY 1000000           // Delay at end of game
+#define HALF_SECOND_DELAY 250000            // Delay for half a second
 
 
 typedef struct {
@@ -30,10 +33,10 @@ typedef struct {
 } LEVEL_INFO;
 
 // Function prototypes
-int generate_first_level(void);
-int tetris_init(void);
-int* get_enemy_x(void);
-int* get_enemy_y(void);
+void generate_next_level(void);
+int game_init(void);
+int get_enemy_x(int index);
+int get_enemy_y(int index);
 int get_level(void);
 int end_of_level(int x, int y);
 void draw_en(void);
@@ -41,4 +44,8 @@ void reset_game(void);
 void countdown(int num);
 int get_end_dist(void);
 void reset_enemy_cords(void);
+void update_enemy_positon(int index, int x, int y);
+int player_touching_enemy(int x, int y);
+int get_num_enemies(void);
+void move_enemies_towards_player(int player_x, int player_y);
 #endif /* GAME_H_ */

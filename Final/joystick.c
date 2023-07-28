@@ -1,31 +1,23 @@
-/**
- ******************************************************************************
- * @file    joystick.c
- * @author  Zachary Kohlman
- * @email	 kohlmanz@msoe.edu
- * @version V1.0
- * @brief   Contains the API for the joystick.
-
- ******************************************************************************
+/*
+ * joystick.c
+ *
+ *  Created on: Apr 14, 2023
+ *      Author: kohlmanz
  */
+
 #include "altera_avalon_pio_regs.h"
 #include "system.h"
 #include "altera_modular_adc.h"
 #include "joystick.h"
 #include "adc.h"
 
-// Variables to hold the joystick's x and y positions
+
 static int joystick_x;
 static int joystick_y;
-
-// Variables to hold the joystick's x and y offsets
 static int offset_x = 0;
 static int offset_y = 0;
 
-/**
- * Reads the joystick's x and y positions from the ADC channels.
- * It also calculates the offset (position from center) and calibrates the joystick.
- */
+//Sets the joy stick x and y position from ADC channels
 void joystick_read(void){
 	int* adc_data = adc_read();
 
@@ -38,30 +30,20 @@ void joystick_read(void){
 	joystick_y = adc_data[1];
 }
 
-/**
- * Returns the ADC reading from channel one (joystick's x position).
- */
+//Returns the ADC readings from channel one
 inline int joystick_get_x(void){
 	return joystick_x;
 }
 
-/**
- * Returns the ADC reading from channel two (joystick's y position).
- */
+//Returns the ADC readings from channel 2
 inline int joystick_get_y(void){
 	return joystick_y;
 }
 
-/**
- * Returns the offset in the x direction (position from center).
- */
 inline int joystick_get_offset_x(void){
 	return offset_x;
 }
 
-/**
- * Returns the offset in the y direction (position from center).
- */
 inline int joystick_get_offset_y(void){
 	return offset_y;
 }

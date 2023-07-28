@@ -7,7 +7,10 @@
  * @brief   Contains the game logic for the game. This includes the level
  * 			generation, enemy generation, and collision detection.
  * 			Also contains the reset function to reset the game to the
- * 			beginning.
+ * 			beginning. The game is played by the user moving the box
+ * 			around the screen to avoid the enemies. The user wins by
+ * 			reaching the bottom of the screen. The user loses by
+ * 			touching an enemy.
  ******************************************************************************
  */
 
@@ -18,6 +21,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <time.h>
+#include <string.h>
 
 
 #include "altera_avalon_pio_regs.h"
@@ -30,10 +34,17 @@
 #include "hex_display.h"
 #include "game.h"
 
-
+// Game variables
 static int level_count = 0;						// Level counter
-static int num_enemies = 5;						// Enemy counter
+static int num_enemies = 0;						// Enemy counter
 static int  end_position = 70;					// To bottom of the screen
+static int end_location = 0;					// Horizontal line position
+
+// Game constants
+static const int ENEMY_SPEED =  1;              // Enemy speed
+
+
+// Game structs
 LEVEL_INFO level_info;							// Struct that contains all level info
 char str[MAX_LENGTH];							// String to display on 7-seg displays
 int xcord[MAX_ENEMIES];							// Array of x coordinates for enemies. Uses sentinel value of -1
@@ -60,7 +71,7 @@ static const char* level_names[] = {
 /**
  * Populates the struct with values and sets constants
  */
-int tetris_init(void){
+int game_init(void){
 	level_count = 0;
 	srand(time(NULL));   // Initialization for rand. num
 
@@ -84,14 +95,16 @@ int tetris_init(void){
 	return 0;
 }
 
+
 /**
  * This function generates the next level in the game.
  * It clears the screen, increments the level counter, and displays the new level on 7-seg displays.
- * It then draws enemies at random x and y locations. These enemies are stationary.
- * 
+ * It then draws enemies at random x and y locations. These enemies are then moved towards the player at a constant speed.
+ * If a valid position for an enemy cannot be found after a certain number of attempts, an error message is printed.
+ *
  * @return 0 on successful execution.
  */
-int generate_next_level(void){
+void generate_next_level(void){
 	// Clear the screen
 	clear_screen();
 
@@ -103,8 +116,8 @@ int generate_next_level(void){
 	hex_message(level_info.level_hex[current_level_index]);
 
 	// Draw enemies at random x and y locations. Are stationary.
-	int num_enemies = level_info.num_enemies[current_level_index];
-	int end_location = level_info.end_location[current_level_index];
+	num_enemies = level_info.num_enemies[current_level_index];
+	end_location = level_info.end_location[current_level_index];
 
 	for(int i = 0; i < num_enemies; i++){
 		int x, y;
@@ -112,13 +125,13 @@ int generate_next_level(void){
 
 		while (1) {
 			// Generate random position
-			x = (rand() & (width - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
-			y = (rand() & (end_location - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
-
-			// Check for collision with existing enemies
+			x = (rand() % (WIDTH - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
+			y = (rand() % (end_location - BOX_SIZE - BOX_OFFSET)) + BOX_OFFSET;
+			// Check for collision with existing enemies and the player
 			int j;
 			for (j = 0; j < i; j++) {
-				if (abs(xcord[j] - x) < BOX_SIZE && abs(ycord[j] - y) < BOX_SIZE) {
+				if ((abs(xcord[j] - x) < BOX_SIZE && abs(ycord[j] - y) < BOX_SIZE) ||
+					(abs(get_player_x() - x) < (BOX_SIZE + SAFE_DISTANCE) && abs(get_player_y() - y) < (BOX_SIZE + SAFE_DISTANCE))) {
 					break;  // Collision detected, break out of the loop
 				}
 			}
@@ -138,8 +151,6 @@ int generate_next_level(void){
 			ycord[i] = y;
 		}
 	}
-
-	return 0;
 }
 /**
  * Returns -1 if touching enemy
@@ -148,7 +159,7 @@ int player_touching_enemy(int x, int y){
 	int player_box_right = x + BOX_SIZE; // Rightmost x-coordinate of player's box
 	int player_box_bottom = y + BOX_SIZE; // Bottommost y-coordinate of player's box
 
-	for(int i = 0; i < MAX_ENEMIES; i++){
+	for(int i = 0; i < num_enemies; i++){
 
 		// Determine if the current value is not a sentinel value
 		if(xcord[i] < 0 || ycord[i] < 0){
@@ -198,7 +209,7 @@ void draw_en(void){
  */
 void reset_game(void){
 	level_count = 0;
-	num_enemies = 5;
+	num_enemies = 0;
 	end_position = 100;
 	reset_player_cords();
 	reset_enemy_cords();
@@ -214,7 +225,7 @@ void countdown(int num){
 		sprintf(str, "%d",i);
 		hex_message(str);
 		//Wait for 1/2 a second
-		usleep(250000);
+		usleep(HALF_SECOND_DELAY);
 	}
 }
 
@@ -236,3 +247,63 @@ void reset_enemy_cords(void){
 	}
 }
 
+/**
+ * Updates the x and y coordinates of the enemy at the given index
+ */
+void update_enemy_position(int index, int x, int y){
+	xcord[index] = x;
+	ycord[index] = y;
+}
+
+/**
+ * Returns the x coordinate of the enemy at the given index
+ */
+int get_enemy_x(int index){
+	return xcord[index];
+}
+
+/**
+ * Returns the y coordinate of the enemy at the given index
+ */
+int get_enemy_y(int index){
+	return ycord[index];
+
+}
+
+int get_num_enemies(void){
+	return num_enemies;
+}
+
+void move_enemies_towards_player(int player_x, int player_y){
+	for(int i = 0; i < num_enemies; i++){
+		// Determine if the current value is not a sentinel value
+		if(xcord[i] < 0 || ycord[i] < 0){
+			break;                // Stop
+		}
+
+		// Move enemy towards player
+		int x_diff = player_x - xcord[i];
+		int y_diff = player_y - ycord[i];
+
+		// Move enemy towards player
+		if(abs(x_diff) > abs(y_diff)){
+			// Move enemy towards player in x direction
+			if(x_diff > 0){
+				// Move enemy right
+				xcord[i] += ENEMY_SPEED;
+			}else{
+				// Move enemy left
+				xcord[i] -= ENEMY_SPEED;
+			}
+		}else{
+			// Move enemy towards player in y direction
+			if(y_diff > 0){
+				// Move enemy down
+				ycord[i] += ENEMY_SPEED;
+			}else{
+				// Move enemy up
+				ycord[i] -= ENEMY_SPEED;
+			}
+		}
+	}
+}

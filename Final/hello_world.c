@@ -83,6 +83,9 @@ int main() {
 		// Reset game status
 		reset_game();
 
+		// Set status to playing
+		playing = 0;
+
 		// Wait 5 seconds before starting again
 		countdown(5);
 	}
